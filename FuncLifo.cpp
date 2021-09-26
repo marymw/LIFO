@@ -9,9 +9,9 @@ int StackCtor(Stack *FirstStackPtr){//конструктор стека, соз�
 	assert(FirstStackPtr); //проверили, существует ли вообще то что нам передали
 
 	int StatusStackCtor = 0; //если никаких ошибок
-	int StackCapacity = 10; //пусть в начале выделяется на 10, а там посмотрим
+	FirstStackPtr->StackCapacity = 10; //пусть в начале выделяется на 10, а там посмотрим
 
-	FirstStackPtr->StackData = (int *)calloc(StackCapacity, sizeof(int));// какой размер передавать стеку в консрукторе
+	FirstStackPtr->StackData = (int *)calloc(FirstStackPtr->StackCapacity, sizeof(int));// какой размер передавать стеку в консрукторе
 
 	if (FirstStackPtr->StackData == nullptr){
 		StatusStackCtor = 1; //ошибка связанная с выделением памяти
