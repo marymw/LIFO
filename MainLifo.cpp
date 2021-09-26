@@ -39,6 +39,15 @@ int main() {
 
 	printf("%d\n", ValueFromPop2);
 
+	StackPrint(FirstStack); 
+
+	for (int i = 0; i < 25; i++) {//на 50 уже падает
+
+		StatusStackPush = StackPush(&FirstStack, 10);//кладет что-то в конец стека
+		assert(StatusStackPush == 0);
+
+	}
+
 	StackPrint(FirstStack);
 
 	int StatusStackDtor = StackDtor(&FirstStack);//деструктор стека
