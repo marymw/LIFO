@@ -11,12 +11,20 @@ int main() {
 	int StatusStackPush = StackPush(&FirstStack, 10);//кладет что-то в конец стека
 	assert(StatusStackPush == 0);
 
-	int Value = 0;
+	StatusStackPush = StackPush(&FirstStack, 20);//кладет что-то в конец стека
+	assert(StatusStackPush == 0);
 
-	int StatusStackPop = StackPop(&FirstStack, &Value); //вытаскивает один элемент из стека
+	int StatusStackPop = 0;
+
+	int ValueFromPop1 = StackPop(&FirstStack, &StatusStackPop); //вытаскивает один элемент из стека
 	assert(StatusStackPop == 0);
 
-	printf("%d\n", Value);
+	printf("%d\n", ValueFromPop1);
+
+	int ValueFromPop2 = StackPop(&FirstStack); //вытаскивает один элемент из стека
+	assert(StatusStackPop == 0);
+
+	printf("%d\n", ValueFromPop2);
 
 
 	int StatusStackDtor = StackDtor(&FirstStack);//деструктор стека
