@@ -11,7 +11,17 @@
 
 enum Errors {
 	NO_ERRORS,      //0
-	STK_UNDEFINED   //1
+	STK_UNDEFINED,   //1
+	LACK_OF_MEMORY  //2
+};
+
+enum Constants{
+	LARGE_VOLUME_CRITERION,	//8
+	SMALL_VOLUME_CRITERION, //2
+	SMALL_COEFFICIENT,      //0.5
+	VERY_SMALL_COEFFICIENT,	//0.25
+	BIG_SIZE_OF_STACK,      //100
+	VERY_BIG_SIZE_OF_STACK	//1000
 };
 
 const int POISON        = 0xF0;
@@ -25,7 +35,7 @@ struct Stack{
 
 int  StackCtor     (Stack *FirstStackPtr);
 int  StackDtor     (Stack *FirstStackPtr);
-int  StackMemory   (Stack *FirstStackPtr);
+int  StackResize   (Stack *SomeStackPtr);
 int  StackPush     (Stack *FirstStackPtr, int Value);
 int  StackPop      (Stack *SomeStackPtr, int *StatusStackPop = NULL);
 void StackPrint    (Stack SomeStack);
