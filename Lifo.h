@@ -23,8 +23,10 @@ struct Stack{
 	size_t StackCapacity; //текущая выделенная память под стек
 };
 
-int StackCtor  (Stack *FirstStackPtr);
-int StackDtor  (Stack *FirstStackPtr);
-int StackMemory(Stack *FirstStackPtr);
-int StackPush  (Stack *FirstStackPtr, int Value);
-int StackPop   (Stack *SomeStackPtr, int *StatusStackPop = NULL);
+int  StackCtor     (Stack *FirstStackPtr);
+int  StackDtor     (Stack *FirstStackPtr);
+int  StackMemory   (Stack *FirstStackPtr);
+int  StackPush     (Stack *FirstStackPtr, int Value);
+int  StackPop      (Stack *SomeStackPtr, int *StatusStackPop = NULL);
+void StackPrint    (Stack SomeStack);
+void PrintSeparator();
