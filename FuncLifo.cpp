@@ -6,7 +6,7 @@
 #include <stdio.h>
 
 //STACKRESIZE
-
+//type
 
 int StackCtor(Stack *SomeStackPtr){//конструктор стека, создает стек, возвращает ошибку
 	assert(SomeStackPtr); //проверили, существует ли вообще то что нам передали
@@ -14,7 +14,8 @@ int StackCtor(Stack *SomeStackPtr){//конструктор стека, созд
 	int StatusStackCtor = 0; //если никаких ошибок
 	SomeStackPtr->StackCapacity = 10; //пусть в начале выделяется на 10, а там посмотрим
 
-	SomeStackPtr->StackData = (int *)calloc(SomeStackPtr->StackCapacity, sizeof(int));// какой размер передавать стеку в консрукторе
+	SomeStackPtr->StackData = (int *)calloc(SomeStackPtr->StackCapacity, sizeof(int));//какой размер передавать стеку 
+																						//в консрукторе
 
 	if (SomeStackPtr->StackData == nullptr){
 		StatusStackCtor = 1; //ошибка связанная с выделением памяти
@@ -34,7 +35,7 @@ int StackPush(Stack *SomeStackPtr, int Value){//кладет что-то в ко
 
 	int StatusStackPush = 0; //если никаких ошибок
 
-	int StatusStackMemory = StackMemory(SomeStackPtr);//функция определяет сколько  памяти зарезервировать стеку
+	int StatusStackMemory = StackResize(SomeStackPtr);//функция определяет сколько  памяти зарезервировать стеку
 	assert(StatusStackMemory == 0);
 
 	SomeStackPtr->StackData[SomeStackPtr->StackSize] = Value;
@@ -64,11 +65,13 @@ int StackPop(Stack *SomeStackPtr, int *StatusStackPop){//вытаскивает 
 
 	DEBUG_PRINTF_ONE_ARG("I am in function %s\n", __FUNCTION__);
 
-	int StatusStackMemory = StackMemory(SomeStackPtr);//функция определяет сколько  памяти зарезервировать стеку
+	int StatusStackMemory = StackResize(SomeStackPtr);//функция определяет сколько  памяти зарезервировать стеку
 	assert(StatusStackMemory == 0);
 
 	SomeStackPtr->StackSize--;
 	int ValueFromPop = SomeStackPtr->StackData[SomeStackPtr->StackSize];
+
+	SomeStackPtr->StackData[SomeStackPtr->StackSize] = POISON;
 
 	DEBUG_PRINTF_ONE_ARG("I am in the end function %s\n", __FUNCTION__);
 
@@ -83,7 +86,8 @@ int StackDtor(Stack *SomeStackPtr){//деструктор стека
 	int StatusStackDtor = 0; //если никаких ошибок
 
 	//залили ядом
-	memset(SomeStackPtr->StackData, POISON, SomeStackPtr->StackCapacity); //размер заполняемой области точно StackCapacity или StackSize? почему именно 0xF0
+	memset(SomeStackPtr->StackData, POISON, SomeStackPtr->StackCapacity);//размер заполняемой области  StackCapacity
+																		//или StackSize? почему именно 0xF0
 	//так как free не чистит память
 
 	
@@ -98,9 +102,57 @@ int StackDtor(Stack *SomeStackPtr){//деструктор стека
 }
 
 
-int StackMemory (Stack *SomeStackPtr){//управлет размером памяти, выделенной под стек
+int StackResize (Stack *SomeStackPtr){//управлет размером памяти, выделенной под стек
 	int StatusStackMemory = 0; //если всё ок
-	printf("Функция %s ещё не реализована\n хрум - хрум\n", __FUNCTION__);
+	//printf("Функция %s ещё не реализована\n хрум - хрум\n", __FUNCTION__);
+
+	if (SomeStackPtr->StackCapacity >= LARGE_VOLUME_CRITERION * SomeStackPtr->StackSize){
+		int *ReallocDataPtr = (int *)realloc(SomeStackPtr->StackData, 
+												  SomeStackPtr->StackCapacity * SMALL_COEFFICIENT);
+		if (ReallocDataPtr == nullptr) {
+			return LACK_OF_MEMORY;
+		}
+
+		SomeStackPtr->StackData = ReallocDataPtr;
+		SomeStackPtr->StackCapacity *= SMALL_COEFFICIENT;
+	
+	}
+	else if (SomeStackPtr->StackCapacity <= SMALL_VOLUME_CRITERION * SomeStackPtr->StackSize){
+		if (SomeStackPtr->StackSize > VERY_BIG_SIZE_OF_STACK) {
+
+			int *ReallocDataPtr = (int *)realloc(SomeStackPtr->StackData, 
+													  SomeStackPtr->StackCapacity * (VERY_SMALL_COEFFICIENT + 1));
+			if (ReallocDataPtr == nullptr) {
+				return LACK_OF_MEMORY;
+			}
+
+			SomeStackPtr->StackData = ReallocDataPtr;
+			SomeStackPtr->StackCapacity *= VERY_SMALL_COEFFICIENT + 1;//X + X*A = X(A+1)
+		}
+
+		else if (SomeStackPtr->StackSize > BIG_SIZE_OF_STACK) {
+
+			int *ReallocDataPtr = (int *)realloc(SomeStackPtr->StackData, 
+													  SomeStackPtr->StackCapacity * (SMALL_COEFFICIENT + 1));
+			if (ReallocDataPtr == nullptr) {
+				return LACK_OF_MEMORY;
+			}
+
+			SomeStackPtr->StackData = ReallocDataPtr;
+			SomeStackPtr->StackCapacity *= SMALL_COEFFICIENT + 1;//X + X*A = X(A+1)
+		}
+
+		else {
+			int *ReallocDataPtr = (int *)realloc(SomeStackPtr->StackData, SomeStackPtr->StackCapacity);
+
+			if (ReallocDataPtr == nullptr) {
+				return LACK_OF_MEMORY;
+			}
+			SomeStackPtr->StackData = ReallocDataPtr;
+			SomeStackPtr->StackCapacity *= 2;//проверка если налл 
+		}
+	}
+	
 	return StatusStackMemory;
 }
 
