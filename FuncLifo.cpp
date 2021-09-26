@@ -5,7 +5,6 @@
 #include <string.h>
 #include <stdio.h>
 
-//PRINTF STACK
 //STACKRESIZE
 
 
@@ -44,6 +43,7 @@ int StackPush(Stack *SomeStackPtr, int Value){//кладет что-то в ко
 	return StatusStackPush;
 }
 
+
 int StackPop(Stack *SomeStackPtr, int *StatusStackPop){//вытаскивает один элемент из стека
 	assert(SomeStackPtr);
 
@@ -75,6 +75,7 @@ int StackPop(Stack *SomeStackPtr, int *StatusStackPop){//вытаскивает 
 	return ValueFromPop;
 }
 
+
 int StackDtor(Stack *SomeStackPtr){//деструктор стека
 
 	assert(SomeStackPtr); //проверили, существует ли вообще то что нам передали
@@ -96,6 +97,7 @@ int StackDtor(Stack *SomeStackPtr){//деструктор стека
 	return StatusStackDtor;
 }
 
+
 int StackMemory (Stack *SomeStackPtr){//управлет размером памяти, выделенной под стек
 	int StatusStackMemory = 0; //если всё ок
 	printf("Функция %s ещё не реализована\n хрум - хрум\n", __FUNCTION__);
@@ -103,4 +105,26 @@ int StackMemory (Stack *SomeStackPtr){//управлет размером пам
 }
 
 
+void StackPrint(Stack SomeStack){
+	PrintSeparator();
+	printf("Printing stack...\n\n");
+
+	if (SomeStack.StackSize == 0) {
+		printf("Stack is empty! :)\n\n");
+		PrintSeparator();
+		return;
+	}
+
+	for (int i = 0; i < SomeStack.StackSize; i++){
+		printf("%d\n", SomeStack.StackData[i]);
+	}
+
+	PrintSeparator();
+
+	return;
+}
+
+void PrintSeparator(){
+	printf("______________________________\n\n");
+}
 //a почему не раюотает???
