@@ -10,9 +10,11 @@
 #endif
 
 enum Errors {//а здесь с какой буквы???
-	NO_ERRORS,      //0
-	STK_UNDEFINED,   //1
-	LACK_OF_MEMORY  //2
+	NO_ERRORS,      	 //0
+	STK_UNDEFINED,       //1
+	LACK_OF_MEMORY, 	 //2
+	SIZE_LARGER_CAPACITY,//3
+	STK_DATA_UNDEFINED	 //4
 };
 
 enum Constants{
@@ -34,10 +36,15 @@ struct Stack{//c маленькой буквы
 	size_t stackCapacity; //текущая выделенная память под стек
 };
 
+#define ASSERT_OK(someStackPtr) if((StackNotOK(someStackPtr))){StackDamp_((someStackPtr));assert((!"Stack OK"));}
+
 int  StackCtor     (Stack *firstStackPtr);
 int  StackDtor     (Stack *firstStackPtr);
 int  StackResize   (Stack *someStackPtr);
 int  StackPush     (Stack *firstStackPtr, int value);
 int  StackPop      (Stack *someStackPtr, int *statusStackPop = NULL);
+int  StackDamp_    (const Stack *someStackPtr);
+int  StackNotOK    (const Stack *someStackPtr);
 void StackPrint    (Stack someStack);
 void PrintSeparator();
+
