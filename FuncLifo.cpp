@@ -8,13 +8,14 @@
 //type
 
 int StackCtor(Stack *someStackPtr){
+
 	assert(someStackPtr); 
 
 	int statusStackCtor = 0; 
 	someStackPtr->stackCapacity = 10; //пусть в начале выделяется на 10, а там посмотрим
 
 	someStackPtr->stackData = (int *)calloc(someStackPtr->stackCapacity, sizeof(int));
-																						/
+																						
 	if (someStackPtr->stackData == nullptr){
 		statusStackCtor = 1; 
 		return statusStackCtor;
@@ -23,21 +24,23 @@ int StackCtor(Stack *someStackPtr){
 	someStackPtr->stackSize = 0; //удалили данные
 	//надо какую-то проверку на size потом делать??
 
-	
+	ASSERT_OK(someStackPtr);
 	return statusStackCtor; //возвращает код ошибки
 }
 
 
 int StackPush(Stack *someStackPtr, int value){//кладет что-то в конец стека
-	assert(someStackPtr); //проверили, существует ли вообще то что нам передали
+	ASSERT_OK(someStackPtr);
 
-	int statusStackPush = 0; //если никаких ошибок
+	int statusStackPush = 0; 
 
 	int statusStackMemory = StackResize(someStackPtr);//функция определяет сколько  памяти зарезервировать стеку
 	assert(statusStackMemory == 0);
 
 	someStackPtr->stackData[someStackPtr->stackSize] = value;
 	someStackPtr->stackSize++;
+
+	ASSERT_OK(someStackPtr);
 	
 	return statusStackPush;
 }
@@ -54,14 +57,15 @@ int StackPop(Stack *someStackPtr, int *statusStackPop){//вытаскивает 
 
 	someStackPtr->stackData[someStackPtr->stackSize] = POISON;
 
+	ASSERT_OK(someStackPtr);
+
 	return valueFromPop;
 }
 
 
 int StackDtor(Stack *someStackPtr){//деструктор стека
 
-	assert(someStackPtr); //проверили, существует ли вообще то что нам передали
-	//!TODO StackOK
+	ASSERT_OK(someStackPtr);
 
 	int statusStackDtor = 0; //если никаких ошибок
 
@@ -76,12 +80,13 @@ int StackDtor(Stack *someStackPtr){//деструктор стека
 	someStackPtr->stackSize = INT_MAX;//самое большое число size_t какое?
 	someStackPtr->stackCapacity = 0;//норм????
 
-
 	return statusStackDtor;
 }
 
 //надо бы протестить как-то
 int StackResize (Stack *someStackPtr){//управлет размером памяти, выделенной под стек
+
+	ASSERT_OK(someStackPtr);
 
 	int statusStackMemory = 0; //надо возвращать её
 
@@ -91,7 +96,7 @@ int StackResize (Stack *someStackPtr){//управлет размером пам
 
 	if (capacityOfSomeStack >= LARGE_VOLUME_CRITERION * sizeOfSomeStack){
 		int *reallocDataPtr = (int *)realloc(dataOfSomeStack, capacityOfSomeStack * NORMAL_DECREASE_COEFF);
-		if (reallocDataPtr == nullptr) {
+		if (reallocDataPtr == nullptr) {/////////////////////////////
 			return LACK_OF_MEMORY;
 		}
 
@@ -123,12 +128,13 @@ int StackResize (Stack *someStackPtr){//управлет размером пам
 			someStackPtr->stackCapacity *= NORMAL_INCREASE_COEFF; 
 		}
 	}
-	
+
+	ASSERT_OK(someStackPtr);
 	return statusStackMemory;
 }
 
 
-void StackPrint(Stack someStack){
+void StackPrint(const Stack someStack){//тут тоже assert_ok?
 	PrintSeparator();
 	printf("Printing stack...\n\n");
 
@@ -150,4 +156,37 @@ void StackPrint(Stack someStack){
 void PrintSeparator(){
 	printf("______________________________\n\n");
 }
-//a почему не раюотает???
+
+int StackNotOK(const Stack *someStackPtr){// enum-тип ??????
+	FILE *logFile = fopen("LIFOlog.txt", "w");
+
+//если у меня size типа size_t, то не делать проверку на >0??
+	if (!someStackPtr){
+		fprintf(logFile, "Указатель на стек равен нулю\n");
+		fclose(logFile);//это что, перед каждым return делать???
+		return STK_UNDEFINED;
+	}
+
+	if (!someStackPtr->stackData){
+		fprintf(logFile, "Указатель на данные стека равен нулю\n");
+		fclose(logFile);//это что, перед каждым return делать???
+		return STK_DATA_UNDEFINED;
+	}
+
+	if(someStackPtr->stackSize > someStackPtr->stackCapacity){
+		fprintf(logFile, "Размер данных стека больше выделенной под стек памяти\n");
+		fclose(logFile);
+		return SIZE_LARGER_CAPACITY;
+	}
+
+	fclose(logFile);
+	return NO_ERRORS;
+}
+
+
+int StackDamp_(const Stack *someStackPtr){
+	printf("Приветик!! А функция %s ещё не реализована!\n", __FUNCTION__);
+	return NO_ERRORS;
+}
+
+
