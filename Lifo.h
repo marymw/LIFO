@@ -9,34 +9,35 @@
 #define DEBUG_PRINTF(string) printf("\n");
 #endif
 
-enum Errors {
+enum Errors {//а здесь с какой буквы???
 	NO_ERRORS,      //0
 	STK_UNDEFINED,   //1
 	LACK_OF_MEMORY  //2
 };
 
 enum Constants{
-	LARGE_VOLUME_CRITERION,	//8
-	SMALL_VOLUME_CRITERION, //2
-	SMALL_COEFFICIENT,      //0.5
-	VERY_SMALL_COEFFICIENT,	//0.25
-	BIG_SIZE_OF_STACK,      //100
-	VERY_BIG_SIZE_OF_STACK	//1000
+	LARGE_VOLUME_CRITERION,	//2
+	SMALL_VOLUME_CRITERION, //1.25
+	NORMAL_DECREASE_COEFF,  //0.75
+	BIG_SIZE_OF_STACK,		//100
+	NORMAL_INCREASE_COEFF,  //1.4
+	SMALL_INCREASE_COEFF	//1.1
 };
 
 const int POISON        = 0xF0;
 const int FREED_POINTER =   13;
 
-struct Stack{
-	int   *StackData;//указатель на начало данных
-	size_t StackSize;//текущий размер стека
-	size_t StackCapacity; //текущая выделенная память под стек
+struct Stack{//c маленькой буквы
+	int   *stackData;//указатель на начало данных
+
+	size_t stackSize;//текущий размер стека
+	size_t stackCapacity; //текущая выделенная память под стек
 };
 
-int  StackCtor     (Stack *FirstStackPtr);
-int  StackDtor     (Stack *FirstStackPtr);
-int  StackResize   (Stack *SomeStackPtr);
-int  StackPush     (Stack *FirstStackPtr, int Value);
-int  StackPop      (Stack *SomeStackPtr, int *StatusStackPop = NULL);
-void StackPrint    (Stack SomeStack);
+int  StackCtor     (Stack *firstStackPtr);
+int  StackDtor     (Stack *firstStackPtr);
+int  StackResize   (Stack *someStackPtr);
+int  StackPush     (Stack *firstStackPtr, int value);
+int  StackPop      (Stack *someStackPtr, int *statusStackPop = NULL);
+void StackPrint    (Stack someStack);
 void PrintSeparator();
