@@ -3,55 +3,27 @@
 #include <stdio.h>
 
 int main() {
-	Stack FirstStack = {}; //типа инициализация
+	Stack firstStack = {}; //типа инициализация
 
-	int StatusStackCtor = StackCtor(&FirstStack); //конструктор стека, создает стек, возвращает ошибку
-	assert(StatusStackCtor == 0);
+	int statusStackCtor = StackCtor(&firstStack); //конструктор стека, создает стек, возвращает ошибку
+	assert(statusStackCtor == 0);
 
-	StackPrint(FirstStack);
+	int statusStackPush = StackPush(&firstStack, 10);//кладет что-то в конец стека
+	assert(statusStackPush == 0);
 
+	statusStackPush = StackPush(&firstStack, 20);//кладет что-то в конец стека
+	assert(statusStackPush == 0);
 
-	int StatusStackPush = StackPush(&FirstStack, 10);//кладет что-то в конец стека
-	assert(StatusStackPush == 0);
+	int statusStackPop = 0;
 
-	StackPrint(FirstStack);
+	int valueFromPop1 = StackPop(&firstStack, &statusStackPop); //вытаскивает один элемент из стека
+	assert(statusStackPop == 0);
 
+	int valueFromPop2 = StackPop(&firstStack); //вытаскивает один элемент из стека
+	assert(statusStackPop == 0);
 
-	StatusStackPush = StackPush(&FirstStack, 20);//кладет что-то в конец стека
-	assert(StatusStackPush == 0);
-
-	StackPrint(FirstStack);
-
-
-	int StatusStackPop = 0;
-
-	StackPrint(FirstStack);
-
-	int ValueFromPop1 = StackPop(&FirstStack, &StatusStackPop); //вытаскивает один элемент из стека
-	assert(StatusStackPop == 0);
-
-	printf("%d\n", ValueFromPop1);
-
-	StackPrint(FirstStack);
-
-	int ValueFromPop2 = StackPop(&FirstStack); //вытаскивает один элемент из стека
-	assert(StatusStackPop == 0);
-
-	printf("%d\n", ValueFromPop2);
-
-	StackPrint(FirstStack); 
-
-	for (int i = 0; i < 25; i++) {//на 50 уже падает
-
-		StatusStackPush = StackPush(&FirstStack, 10);//кладет что-то в конец стека
-		assert(StatusStackPush == 0);
-
-	}
-
-	StackPrint(FirstStack);
-
-	int StatusStackDtor = StackDtor(&FirstStack);//деструктор стека
-	assert(StatusStackDtor == 0);
+	int statusStackDtor = StackDtor(&firstStack);//деструктор стека
+	assert(statusStackDtor == 0);
 
 	return 0;
 }
