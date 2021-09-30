@@ -16,6 +16,8 @@ int main() {
 
 	int statusStackPop = 0;
 
+	StackDump(&firstStack);
+
 	int valueFromPop1 = StackPop(&firstStack, &statusStackPop); //вытаскивает один элемент из стека
 	assert(statusStackPop == 0);
 
