@@ -8,6 +8,8 @@ int main() {
 	int statusStackCtor = StackCtor(&firstStack); //конструктор стека, создает стек, возвращает ошибку
 	assert(statusStackCtor == 0);
 
+	StackDump(&firstStack);
+
 	int statusStackPush = StackPush(&firstStack, 10);//кладет что-то в конец стека
 	assert(statusStackPush == 0);
 
@@ -16,7 +18,7 @@ int main() {
 
 	int statusStackPop = 0;
 
-	StackDump(&firstStack);
+	//StackDump(&firstStack);
 
 	int valueFromPop1 = StackPop(&firstStack, &statusStackPop); //вытаскивает один элемент из стека
 	assert(statusStackPop == 0);
@@ -26,6 +28,8 @@ int main() {
 
 	int statusStackDtor = StackDtor(&firstStack);//деструктор стека
 	assert(statusStackDtor == 0);
+
+	//StackDtor(&firstStack); //пока не работает проверка
 
 	return 0;
 }
