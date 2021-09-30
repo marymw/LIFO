@@ -9,7 +9,9 @@
 
 int StackCtor(Stack *someStackPtr){
 
-	assert(someStackPtr); 
+	if (someStackPtr == 0) {
+		return StackNotOK(someStackPtr);
+	} 
 
 	int statusStackCtor = 0; 
 	someStackPtr->stackCapacity = 10; //пусть в начале выделяется на 10, а там посмотрим
@@ -184,9 +186,18 @@ int StackNotOK(const Stack *someStackPtr){// enum-тип ??????
 }
 
 
-int StackDamp_(const Stack *someStackPtr){
-	printf("Приветик!! А функция %s ещё не реализована!\n", __FUNCTION__);
+int StackDump_(const Stack *someStackPtr, const int line,	 const char *file,const char *function_name){
+
+	FILE *FileDamp = fopen("LifoDamp.html", "w");
+
+
+	fprintf(FileDamp, "line = %d, file = %s, function_name = %s", line, file, function_name);
+
+
+	fclose(FileDamp);
+	
 	return NO_ERRORS;
 }
+
 
 
