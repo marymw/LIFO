@@ -240,3 +240,38 @@ fprintf(FileDump, "<pre>");
 	fprintf(FileDump, "</pre>");
 }
 
+void MyMemcpy(void *newObject, const void *oldObject, size_t numberOfSymbols){
+
+
+	int i = 0;
+	for (; i < (numberOfSymbols / sizeof(long long int)); i++ ){
+			
+		((long long int *)newObject)[i] = ((long long int *)oldObject)[i];
+
+	}
+
+	numberOfSymbols = numberOfSymbols % sizeof(long long int);
+
+	for (; i < (numberOfSymbols / sizeof(int)); i++ ){
+		
+		((int *)newObject)[i] = ((int *)oldObject)[i];
+
+	}
+
+	numberOfSymbols = numberOfSymbols % sizeof(int);
+
+	for (; i < (numberOfSymbols / sizeof(short int)); i++ ){
+		
+		((short int *)newObject)[i] = ((short int *)oldObject)[i];
+
+	}
+
+	numberOfSymbols = numberOfSymbols % sizeof(short int);
+
+	for (; i < (numberOfSymbols / sizeof(char)); i++ ){
+		
+		((char *)newObject)[i] = ((char *)oldObject)[i];
+
+	}
+		
+}
