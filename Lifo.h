@@ -14,7 +14,8 @@ enum Errors {//а здесь с какой буквы???
 	STK_UNDEFINED,       //1
 	LACK_OF_MEMORY, 	 //2
 	SIZE_LARGER_CAPACITY,//3
-	STK_DATA_UNDEFINED	 //4
+	STK_DATA_UNDEFINED,	 //4
+	TWICE_CALLED_DTOR    //5
 };
 
 enum Constants{
@@ -26,8 +27,8 @@ enum Constants{
 	SMALL_INCREASE_COEFF	//1.1
 };
 
-const int POISON        = 0xF0;
-const int FREED_POINTER =   13;
+const int POISON        = 666;
+const int FREED_POINTER =  13;
 
 struct Stack{//c маленькой буквы
 	int   *stackData;//указатель на начало данных
@@ -49,4 +50,5 @@ int  StackDump_    (const Stack *someStackPtr, const int line, const char *file,
 int  StackNotOK    (const Stack *someStackPtr);
 void StackPrint    (Stack someStack);
 void PrintSeparator();
+
 
