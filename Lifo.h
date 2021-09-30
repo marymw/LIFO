@@ -36,14 +36,16 @@ struct Stack{//c маленькой буквы
 	size_t stackCapacity; //текущая выделенная память под стек
 };
 
-#define ASSERT_OK(someStackPtr) if((StackNotOK(someStackPtr))){StackDamp_((someStackPtr));assert((!"Stack OK"));}
+#define ASSERT_OK(someStackPtr) if((StackNotOK(someStackPtr))){StackDump(someStackPtr);assert((!"Stack OK"));}
+
+#define StackDump(someStackPtr) {StackDump_(someStackPtr, __LINE__, __FILE__, __FUNCTION__);}
 
 int  StackCtor     (Stack *firstStackPtr);
 int  StackDtor     (Stack *firstStackPtr);
 int  StackResize   (Stack *someStackPtr);
 int  StackPush     (Stack *firstStackPtr, int value);
 int  StackPop      (Stack *someStackPtr, int *statusStackPop = NULL);
-int  StackDamp_    (const Stack *someStackPtr);
+int  StackDump_    (const Stack *someStackPtr, const int line, const char *file, const char *function_name);
 int  StackNotOK    (const Stack *someStackPtr);
 void StackPrint    (Stack someStack);
 void PrintSeparator();
