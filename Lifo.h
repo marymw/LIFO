@@ -51,5 +51,4 @@ int  StackNotOK    (const Stack *someStackPtr, const int line, const char *file,
 void StackPrint    (Stack someStack);
 void PrintElement  (const Stack *someStackPtr);
 void PrintSeparator();
-
-
+void MyMemcpy      (void *newObject, const void *oldObject, size_t numberOfSymbols);
