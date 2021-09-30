@@ -4,21 +4,22 @@
 #include <values.h>
 #include <string.h>
 #include <stdio.h>
+#include <ctype.h>
 
 //type
 //норм
 int StackCtor(Stack *someStackPtr){
 
 	if (someStackPtr == 0) {
-		return StackNotOK(someStackPtr);
+		return StackNotOK(someStackPtr, __LINE__, __FILE__, "StackCtor");//ну такое себе решение..
 	} 
 
 	someStackPtr->stackCapacity = 10; //пусть в начале выделяется на 10, а там посмотрим
 	someStackPtr->stackData     = (int *)calloc(someStackPtr->stackCapacity, sizeof(int));
-	memset(someStackPtr->stackData, POISON, someStackPtr->stackCapacity);
+	memset(someStackPtr->stackData, POISON, someStackPtr->stackCapacity);//что не тааааааак
 																						
 	if (someStackPtr->stackData == nullptr){ 
-		return StackNotOK(someStackPtr);
+		return StackNotOK(someStackPtr, __LINE__, __FILE__, "StackCtor");
 	}
 
 	someStackPtr->stackSize = 0; //удалили данные
@@ -160,8 +161,10 @@ void PrintSeparator(){
 }
 
 //норм, а что делать с вызовами функций? всё время открывать лог файл и закрывать??
-int StackNotOK(const Stack *someStackPtr){// enum-тип ??????
-	FILE *logFile = fopen("LIFOlog.txt", "w");
+int StackNotOK(const Stack *someStackPtr, const int line, const char *file, const char *function_name){// enum-тип ??????
+	FILE *logFile = fopen("LIFOlog.txt", "a");//а как сделать чтобы в чистый файл писала?
+
+	fprintf(logFile, "В файле %s на строчке %d вызвана функция %s.\n", file, line, function_name);
 
 //если у меня size типа size_t, то не делать проверку на >0??
 	if (!someStackPtr){
@@ -193,19 +196,47 @@ int StackNotOK(const Stack *someStackPtr){// enum-тип ??????
 }
 
 
-int StackDump_(const Stack *someStackPtr, const int line,	 const char *file,const char *function_name){
+int StackDump_(const Stack *someStackPtr, const int line, const char *file, const char *function_name){
+//а здесь с режимом a или w лучше открыть??
+	FILE *FileDump = fopen("LifoDamp.html", "w");
 
-	FILE *FileDamp = fopen("LifoDamp.html", "w");
+	int statusStackNotOK = StackNotOK(someStackPtr, __LINE__, __FILE__, __FUNCTION__);
 
+	fprintf(FileDump, "<pre>Вызван для типа:  , c типом элементов: , адрес стековой переменой : %p, верификатор выдал %d, name : called from function  %s, at file %s(%d)\n", someStackPtr, statusStackNotOK, function_name, file, line);
 
-	fprintf(FileDamp, "line = %d, file = %s, function_name = %s", line, file, function_name);
+	if(someStackPtr == 0)
+		fprintf(FileDump, "Указатель на стек равен нулю, дальше печатать ничего не буду!\n");
 
+	else {
+		fprintf(FileDump, "size = %zu\n capacity = %zu\n", someStackPtr->stackSize, someStackPtr->stackCapacity);
+		if (someStackPtr->stackData == 0){
+			fprintf(FileDump, "нулевой указатель на data. Дальше печатать ничего не буду\n");
+		}
+		else{
+			fprintf(FileDump, "data[%p]\n", someStackPtr->stackData);
+			PrintElement(someStackPtr);
+		}
+	}
 
-	fclose(FileDamp);
-	
+	fprintf(FileDump, "Тут мои полномочия всё\n</pre>");
+	fclose(FileDump);
+
 	return NO_ERRORS;
 }
 
+void PrintElement(const Stack *someStackPtr){
 
+FILE *FileDump = fopen("LifoDamp.html", "a");
+fprintf(FileDump, "<pre>");
+	for (int i = 0; i < someStackPtr->stackCapacity; i++){
+		if (i < someStackPtr->stackSize){
+			fprintf(FileDump, "*[%d] = %d\n\n", i, someStackPtr->stackData[i]);
+		}
+		else {
+			fprintf(FileDump, "[%d] = %d\n\n", i, someStackPtr->stackData[i]);
+		}
 
+	}
+	fprintf(FileDump, "</pre>");
+}
 
