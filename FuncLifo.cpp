@@ -6,91 +6,85 @@
 #include <stdio.h>
 
 //type
-
+//норм
 int StackCtor(Stack *someStackPtr){
 
 	if (someStackPtr == 0) {
 		return StackNotOK(someStackPtr);
 	} 
 
-	int statusStackCtor = 0; 
 	someStackPtr->stackCapacity = 10; //пусть в начале выделяется на 10, а там посмотрим
-
-	someStackPtr->stackData = (int *)calloc(someStackPtr->stackCapacity, sizeof(int));
+	someStackPtr->stackData     = (int *)calloc(someStackPtr->stackCapacity, sizeof(int));
+	memset(someStackPtr->stackData, POISON, someStackPtr->stackCapacity);
 																						
-	if (someStackPtr->stackData == nullptr){
-		statusStackCtor = 1; 
-		return statusStackCtor;
+	if (someStackPtr->stackData == nullptr){ 
+		return StackNotOK(someStackPtr);
 	}
 
 	someStackPtr->stackSize = 0; //удалили данные
-	//надо какую-то проверку на size потом делать??
-
+	
 	ASSERT_OK(someStackPtr);
-	return statusStackCtor; //возвращает код ошибки
+
+	return NO_ERRORS; 
 }
 
+//норм
+int StackPush(Stack *someStackPtr, const int value){ 
 
-int StackPush(Stack *someStackPtr, int value){//кладет что-то в конец стека
 	ASSERT_OK(someStackPtr);
 
-	int statusStackPush = 0; 
-
-	int statusStackMemory = StackResize(someStackPtr);//функция определяет сколько  памяти зарезервировать стеку
-	assert(statusStackMemory == 0);
+	int statusStackMemory = StackResize(someStackPtr);
+	assert(statusStackMemory == 0);//надо чем-то заменить?
 
 	someStackPtr->stackData[someStackPtr->stackSize] = value;
 	someStackPtr->stackSize++;
 
 	ASSERT_OK(someStackPtr);
 	
-	return statusStackPush;
+	return NO_ERRORS;
 }
 
+//норм
+int StackPop(Stack *someStackPtr, int *statusStackPop){
 
-int StackPop(Stack *someStackPtr, int *statusStackPop){//вытаскивает один элемент из стека
-	assert(someStackPtr);
+	ASSERT_OK(someStackPtr);
 
-	int statusStackMemory = StackResize(someStackPtr);//функция определяет сколько  памяти зарезервировать стеку
+	int statusStackMemory = StackResize(someStackPtr);
 	assert(statusStackMemory == 0);
 
 	someStackPtr->stackSize--;
-	int valueFromPop = someStackPtr->stackData[someStackPtr->stackSize];
+	int sizeOfSomeStack = someStackPtr->stackSize;//int sizeOfSomeStack = (--someStackPtr->stackSize);
 
-	someStackPtr->stackData[someStackPtr->stackSize] = POISON;
+	int valueFromPop = someStackPtr->stackData[sizeOfSomeStack];
+
+	someStackPtr->stackData[sizeOfSomeStack] = POISON;
 
 	ASSERT_OK(someStackPtr);
 
 	return valueFromPop;
 }
 
-
+//НОРМ
 int StackDtor(Stack *someStackPtr){//деструктор стека
 
 	ASSERT_OK(someStackPtr);
 
-	int statusStackDtor = 0; //если никаких ошибок
+	memset(someStackPtr->stackData, POISON, someStackPtr->stackCapacity);
 
-	memset(someStackPtr->stackData, POISON, someStackPtr->stackCapacity);//размер заполняемой области  StackCapacity
-																		//или StackSize? почему именно 0xF0
-	//так как free не чистит память
-
-	
 	free(someStackPtr->stackData);
-	someStackPtr->stackData = (int *)FREED_POINTER;// 13 - маленьное число, маркер уже освобожденных укахателей 
 
-	someStackPtr->stackSize = INT_MAX;//самое большое число size_t какое?
-	someStackPtr->stackCapacity = 0;//норм????
+	someStackPtr = (Stack *)FREED_POINTER;// 13 - маленьное число, маркер уже освобожденных указателей 
 
-	return statusStackDtor;
+	//someStackPtr->stackSize = INT_MAX;//самое большое число size_t какое?
+	//someStackPtr->stackCapacity = 0;//норм????  a главное зачем....
+
+	return NO_ERRORS;
 }
 
-//надо бы протестить как-то
+//надо бы протестить как-то, а так норм
 int StackResize (Stack *someStackPtr){//управлет размером памяти, выделенной под стек
 
 	ASSERT_OK(someStackPtr);
-
-	int statusStackMemory = 0; //надо возвращать её
 
 	int sizeOfSomeStack     = someStackPtr->stackSize;
 	int capacityOfSomeStack = someStackPtr->stackCapacity;
@@ -98,7 +92,8 @@ int StackResize (Stack *someStackPtr){//управлет размером пам
 
 	if (capacityOfSomeStack >= LARGE_VOLUME_CRITERION * sizeOfSomeStack){
 		int *reallocDataPtr = (int *)realloc(dataOfSomeStack, capacityOfSomeStack * NORMAL_DECREASE_COEFF);
-		if (reallocDataPtr == nullptr) {/////////////////////////////
+
+		if (reallocDataPtr == nullptr) {//будет тупо выводить это в отдельную функцию, так как придется проверять что она вернула
 			return LACK_OF_MEMORY;
 		}
 
@@ -112,6 +107,7 @@ int StackResize (Stack *someStackPtr){//управлет размером пам
 		if (sizeOfSomeStack > BIG_SIZE_OF_STACK) {
 
 			int *reallocDataPtr = (int *)realloc(dataOfSomeStack, capacityOfSomeStack * SMALL_INCREASE_COEFF);
+
 			if (reallocDataPtr == nullptr) {
 				return LACK_OF_MEMORY;
 			}
@@ -126,17 +122,20 @@ int StackResize (Stack *someStackPtr){//управлет размером пам
 			if (reallocDataPtr == nullptr) {
 				return LACK_OF_MEMORY;
 			}
+
 			someStackPtr->stackData = reallocDataPtr;
 			someStackPtr->stackCapacity *= NORMAL_INCREASE_COEFF; 
 		}
 	}
 
 	ASSERT_OK(someStackPtr);
-	return statusStackMemory;
+
+	return NO_ERRORS;
 }
 
-
+//ну норм
 void StackPrint(const Stack someStack){//тут тоже assert_ok?
+
 	PrintSeparator();
 	printf("Printing stack...\n\n");
 
@@ -155,10 +154,12 @@ void StackPrint(const Stack someStack){//тут тоже assert_ok?
 	return;
 }
 
+//лучшее
 void PrintSeparator(){
 	printf("______________________________\n\n");
 }
 
+//норм, а что делать с вызовами функций? всё время открывать лог файл и закрывать??
 int StackNotOK(const Stack *someStackPtr){// enum-тип ??????
 	FILE *logFile = fopen("LIFOlog.txt", "w");
 
@@ -167,6 +168,12 @@ int StackNotOK(const Stack *someStackPtr){// enum-тип ??????
 		fprintf(logFile, "Указатель на стек равен нулю\n");
 		fclose(logFile);//это что, перед каждым return делать???
 		return STK_UNDEFINED;
+	}
+
+	if (someStackPtr == (Stack *)FREED_POINTER){//это вообще верно??
+		fprintf(logFile, "Указатель на стек уже был удалён!\n");
+		fclose(logFile);//это что, перед каждым return делать???
+		return TWICE_CALLED_DTOR;
 	}
 
 	if (!someStackPtr->stackData){
@@ -198,6 +205,7 @@ int StackDump_(const Stack *someStackPtr, const int line,	 const char *file,cons
 	
 	return NO_ERRORS;
 }
+
 
 
 
