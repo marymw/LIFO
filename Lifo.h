@@ -27,12 +27,17 @@ enum Constants{
 	SMALL_INCREASE_COEFF	//1.1
 };
 
-const int POISON        = 666;
-const int FREED_POINTER =  13;
+typedef int Type;
+
+extern const Type POISON        ;
+extern const int FREED_POINTER ;
+extern const size_t SIZE_T_MAX;
+
 
 struct Stack{//c маленькой буквы
-	int   *stackData;//указатель на начало данных
-
+	//void   *stackData;//указатель на начало данных
+	//size_t sizeOfTypeOfElements;//это вводит сам пользователь?
+	Type *stackData;
 	size_t stackSize;//текущий размер стека
 	size_t stackCapacity; //текущая выделенная память под стек
 };
@@ -44,11 +49,13 @@ struct Stack{//c маленькой буквы
 int  StackCtor     (Stack *firstStackPtr);
 int  StackDtor     (Stack *firstStackPtr);
 int  StackResize   (Stack *someStackPtr);
-int  StackPush     (Stack *firstStackPtr, int value);
-int  StackPop      (Stack *someStackPtr, int *statusStackPop = NULL);
+Type StackTop      (Stack someStack);
+int  StackPush     (Stack *firstStackPtr, Type value);
+Type StackPop      (Stack *someStackPtr, int *statusStackPop = NULL);
 int  StackDump_    (const Stack *someStackPtr, const int line, const char *file, const char *function_name);
 int  StackNotOK    (const Stack *someStackPtr, const int line, const char *file, const char *function_name);
-void StackPrint    (Stack someStack);
+void IntStackPrint (Stack someStack);
 void PrintElement  (const Stack *someStackPtr);
 void PrintSeparator();
 void MyMemcpy      (void *newObject, const void *oldObject, size_t numberOfSymbols);
+
