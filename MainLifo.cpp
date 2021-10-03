@@ -35,3 +35,4 @@ int main() {
 	//StackDtor(&firstStack); //пока не работает проверка
 
 	return 0;
+}
