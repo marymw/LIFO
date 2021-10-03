@@ -9,13 +9,14 @@
 #define DEBUG_PRINTF(string) printf("\n");
 #endif
 
-enum Errors {//а здесь с какой буквы???
+enum Errors {
 	NO_ERRORS,      	 //0
 	STK_UNDEFINED,       //1
 	LACK_OF_MEMORY, 	 //2
 	SIZE_LARGER_CAPACITY,//3
 	STK_DATA_UNDEFINED,	 //4
-	TWICE_CALLED_DTOR    //5
+	TWICE_CALLED_DTOR,   //5
+	CANARY_MISMATCH		 //6
 };
 
 enum Constants{
@@ -28,18 +29,22 @@ enum Constants{
 };
 
 typedef int Type;
+typedef unsigned long long int canary_t;
 
 extern const Type POISON        ;
 extern const int FREED_POINTER ;
 extern const size_t SIZE_T_MAX;
+extern const unsigned long long int CANARY_CONST;
 
 
-struct Stack{//c маленькой буквы
+struct Stack{
 	//void   *stackData;//указатель на начало данных
 	//size_t sizeOfTypeOfElements;//это вводит сам пользователь?
+	canary_t canary1;
 	Type *stackData;
-	size_t stackSize;//текущий размер стека
-	size_t stackCapacity; //текущая выделенная память под стек
+	size_t stackSize;
+	size_t stackCapacity; 
+	canary_t canary2;
 };
 
 #define ASSERT_OK(someStackPtr) if((StackNotOK(someStackPtr, __LINE__, __FILE__, __FUNCTION__))){StackDump(someStackPtr);assert((!"Stack OK"));}
