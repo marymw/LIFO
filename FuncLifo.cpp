@@ -7,22 +7,25 @@
 #include <stdio.h>
 #include <ctype.h>
 
-//type сделлать через typedef и поменять везде на type
-//норм, но всё что ниже нужно переделать для произвольного стека
-//int StackCtor(Stack *someStackPtr, size_t sizeOfTypeOfElements)
+
+//!TODO канарейки для данных стека
+//!TODO хеш функции
+
+
 
 const Type POISON = 66;
 const int FREED_POINTER = 13;
 const size_t SIZE_T_MAX = -1;
+const unsigned long long int CANARY_CONST = 3738381229;
 
 int StackCtor(Stack *someStackPtr){
 
 	if (someStackPtr == 0) {
-		return StackNotOK(someStackPtr, __LINE__, __FILE__, "StackCtor");//ну такое себе решение..
+		return STK_UNDEFINED;
 	} 
 
 	someStackPtr->stackCapacity		   = 10; //пусть в начале выделяется на 10, а там посмотрим
-	//someStackPtr->sizeOfTypeOfElements = sizeOfTypeOfElements;
+	
 	someStackPtr->stackData     	   = (Type *)calloc(someStackPtr->stackCapacity, sizeof(int));
 	memset(someStackPtr->stackData, 0xF0, someStackPtr->stackCapacity);//нельзя???
 																						
@@ -30,7 +33,9 @@ int StackCtor(Stack *someStackPtr){
 		return StackNotOK(someStackPtr, __LINE__, __FILE__, "StackCtor");
 	}
 
-	someStackPtr->stackSize = 0; //удалили данные
+	someStackPtr->stackSize = 0; 
+	someStackPtr->canary1 = CANARY_CONST;
+	someStackPtr->canary2 = CANARY_CONST;
 	
 	ASSERT_OK(someStackPtr);
 
@@ -82,22 +87,13 @@ int StackDtor(Stack *someStackPtr){//деструктор стека
 
 	free(someStackPtr->stackData);
 	
-	someStackPtr->stackSize = SIZE_T_MAX;//самое большое число size_t какое?
-	someStackPtr->stackCapacity = 0;//норм????  a главное зачем....
+	someStackPtr->stackSize = SIZE_T_MAX;
+	someStackPtr->stackCapacity = 0;
 
 	return NO_ERRORS;
 }
 
-/*
-void foo()
-{
-	Stack stk = {};
-	...
-	StackDtor (&stk);
-}
-*/
 
-//надо бы протестить как-то, а так норм
 int StackResize (Stack *someStackPtr){//управлет размером памяти, выделенной под стек
 
 	ASSERT_OK(someStackPtr);
@@ -204,6 +200,18 @@ int StackNotOK(const Stack *someStackPtr, const int line, const char *file, cons
 		fprintf(logFile, "Размер данных стека больше выделенной под стек памяти\n");
 		fclose(logFile);
 		return SIZE_LARGER_CAPACITY;
+	}
+
+	if (someStackPtr->canary1 != CANARY_CONST){
+		fprintf(logFile, "Несовпадение левой канарейки!! Её значение canary1 =  %llx \n", someStackPtr->canary1);
+		fclose(logFile);
+		return CANARY_MISMATCH;
+	}
+
+	if (someStackPtr->canary2 != CANARY_CONST){
+		fprintf(logFile, "Несовпадение правой канарейки!! Её значение canary2 =  %llx \n", someStackPtr->canary2);
+		fclose(logFile);
+		return CANARY_MISMATCH;
 	}
 
 	fclose(logFile);
