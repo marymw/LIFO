@@ -2,6 +2,7 @@
 #define LIFO_H
 
 #include <string.h>
+#include <stdio.h>
 
 #define DEBUG 1
 
@@ -24,12 +25,12 @@ enum Errors {
 };
 
 enum Constants{
-	LARGE_VOLUME_CRITERION,	//2
-	SMALL_VOLUME_CRITERION, //1.25
-	NORMAL_DECREASE_COEFF,  //0.75
-	BIG_SIZE_OF_STACK,		//100
-	NORMAL_INCREASE_COEFF,  //1.4
-	SMALL_INCREASE_COEFF	//1.1
+	LARGE_VOLUME_CRITERION = 8,
+	SMALL_VOLUME_CRITERION = 2,
+	NORMAL_DECREASE_COEFF = 2,  
+	BIG_SIZE_OF_STACK = 100,		
+	NORMAL_INCREASE_COEFF = 3,  
+	SMALL_INCREASE_COEFF = 2	
 };
 
 typedef int 				   Type;
@@ -45,7 +46,6 @@ extern const unsigned long long int CANARY_CONST;
 #define NullPtrCheck(someStackPtr, logFile, string, nameOfError) do {							 \
 																	if (!someStackPtr){		     \
 																		fprintf(logFile, string);\
-																		fclose(logFile);		 \
 																		return(nameOfError);     \
 																	}	 						 \
 																 } while(0)
@@ -54,7 +54,6 @@ extern const unsigned long long int CANARY_CONST;
 #define FreedPtrCheck(someStackPtr, nameOfConst, logFile, string, nameOfError) do {							  \
 																	if(someStackPtr == (Stack *)nameOfConst){ \
 																		fprintf(logFile, string);			  \
-																		fclose(logFile);		 		      \
 																		return(nameOfError);				  \
 																	}	 				 					  \
 																		       } while(0)
@@ -63,17 +62,24 @@ extern const unsigned long long int CANARY_CONST;
 #define CanaryCheck(canary, canaryConst, logFile, string, nameOfError) do {									     \
 																			if (canary != canaryConst){ 		 \
 																				fprintf(logFile, string, canary);\
-																				fclose(logFile);				 \
 																				return nameOfError;			     \
 																			}									 \
 																		} while(0)
-#define HashCheck(hashValue, hashExpectedValue, logFile, string, nameOfError) do {							     					   \
+
+#define HashCheck(hashValue, hashExpectedValue, logFile, string, nameOfError) do {								   \
 														if (hashValue != hashExpectedValue){ 					   \
 															fprintf(logFile, string, hashValue, hashExpectedValue);\
-															fclose(logFile);				 					   \
 															return nameOfError;			     					   \
 														}									 					   \
 																		     } while(0)
+
+
+#define CompOsSizeAndCapacityCheck(size, capacity, logFile, string, nameOfError) do {								\
+																		    if(size > capacity){					\
+																				fprintf(logFile, string);			\
+																				return nameOfError;					\
+																			}										\
+																		 }while(0)
 
 
 struct Stack{
@@ -103,7 +109,7 @@ struct Stack{
 
 int    StackDtor     (Stack *someStackPtr);
 int    StackCtor     (Stack *someStackPtr, size_t someStackCapacity);
-
+int    SetPoison     (Stack *someStackPtr);
 Type   StackTop      (Stack someStack);
 int    StackPush     (Stack *firstStackPtr, Type value);
 Type   StackPop      (Stack *someStackPtr, int *statusStackPop = NULL);
