@@ -7,8 +7,10 @@
 #include <ctype.h>
 
 static int StackResize (Stack *someStackPtr);
+static FILE *FileDump = NULL;
+static FILE *logFile  = NULL;
 
-const Type 					 POISON          = 66;
+const Type 					 POISON          = 666;
 const int 					 FREED_POINTER   = 13;
 const size_t 				 SIZE_T_MAX      = -1;
 const unsigned long long int CANARY_CONST    = 3738381229;
@@ -16,39 +18,46 @@ const Type 					 CANARY_FOR_DATA = 100;
 
 int StackCtor(Stack *someStackPtr, size_t someStackCapacity){
 
+
 	if (someStackPtr == nullptr) {
 		return STK_UNDEFINED;
 	} 
 
+	logFile  = fopen("LIFOlog.txt", "w");
+	FileDump = fopen("LifoDump.html", "w");
+
 	someStackPtr->stackCapacity = someStackCapacity; 
-	someStackPtr->stackData     = (Type *)calloc(someStackPtr->stackCapacity + 2, sizeof(Type));//+1 для канарейки сделать??
+	someStackPtr->stackData     = (Type *)calloc(someStackPtr->stackCapacity + 2, sizeof(Type));
 
-	if (someStackPtr->stackData == nullptr){ 
-		return StackNotOK(someStackPtr, __LINE__, __FILE__, "StackCtor");
+	SetPoison(someStackPtr);
+
+	for (int i = 0; i < someStackPtr->stackCapacity + 2; i++){
+		someStackPtr->stackData[i] = POISON;
 	}
-
-	memset(someStackPtr->stackData, 0xF0, someStackPtr->stackCapacity);//нельзя???
 																						
-	someStackPtr->stackData++;
+	someStackPtr->stackData += 1;
 	someStackPtr->stackSize = 0; 
-	someStackPtr->canary1 = CANARY_CONST;
-	someStackPtr->canary2 = CANARY_CONST;
+	someStackPtr->canary1   = CANARY_CONST;
+	someStackPtr->canary2   = CANARY_CONST;
 	(someStackPtr->stackData)[-1] = CANARY_FOR_DATA;
 	(someStackPtr->stackData)[someStackPtr->stackCapacity] = CANARY_FOR_DATA;
 	
-	someStackPtr->hash = MyHashRot13((const char *)someStackPtr); 
+	someStackPtr->hash = MyHashRot13((const char *)someStackPtr);
+
 	ASSERT_OK(someStackPtr);
 
 	return NO_ERRORS; 
 }
 
-//норм
+
 int StackPush(Stack *someStackPtr, const Type value){ 
 
 	ASSERT_OK(someStackPtr);
 
 	int statusStackMemory = StackResize(someStackPtr);
-	assert(statusStackMemory == 0);//надо чем-то заменить?
+	if (statusStackMemory != 0){
+		return statusStackMemory;
+	}
 
 	someStackPtr->stackData[someStackPtr->stackSize] = value;
 	someStackPtr->stackSize++;
@@ -59,16 +68,18 @@ int StackPush(Stack *someStackPtr, const Type value){
 	return NO_ERRORS;
 }
 
-//норм
+
 Type StackPop(Stack *someStackPtr, int *statusStackPop){
 
 	ASSERT_OK(someStackPtr);
 
 	int statusStackMemory = StackResize(someStackPtr);
-	assert(statusStackMemory == 0);//в лог, не падать
+	if (statusStackMemory != 0){
+		return statusStackMemory;
+	}
 
 	someStackPtr->stackSize--;
-	size_t sizeOfSomeStack = someStackPtr->stackSize;//int sizeOfSomeStack = (--someStackPtr->stackSize);
+	size_t sizeOfSomeStack = someStackPtr->stackSize;
 
 	Type valueFromPop = someStackPtr->stackData[sizeOfSomeStack];
 
@@ -80,23 +91,29 @@ Type StackPop(Stack *someStackPtr, int *statusStackPop){
 	return valueFromPop;
 }
 
-//канарейки удалять?
-int StackDtor(Stack *someStackPtr){//деструктор стека
+
+int StackDtor(Stack *someStackPtr){
 
 	ASSERT_OK(someStackPtr);
-//memset(someStackPtr->stackData - 1, 0xF0, someStackPtr->stackCapacity + 2);//еще для канареек
-	memset(someStackPtr->stackData, 0xF0, someStackPtr->stackCapacity);
+
+    memset((someStackPtr->stackData - 1), POISON, someStackPtr->stackCapacity + 2);
 
 	free(someStackPtr->stackData - 1);
 	
-	someStackPtr->stackSize = SIZE_T_MAX;
+	someStackPtr->stackSize 	= SIZE_T_MAX;
 	someStackPtr->stackCapacity = 0;
+	someStackPtr->canary1		= 0;
+	someStackPtr->canary2 		= 0;
+	someStackPtr->hash 			= 0;
+
+	fclose(FileDump);
+	fclose(logFile);
 
 	return NO_ERRORS;
 }
 
 
-static int StackResize (Stack *someStackPtr){//управлет размером памяти, выделенной под стек
+static int StackResize(Stack *someStackPtr){
 
 	ASSERT_OK(someStackPtr);
 
@@ -105,38 +122,34 @@ static int StackResize (Stack *someStackPtr){//управлет размером
 	Type *dataOfSomeStack     = someStackPtr->stackData - 1;
 
 	if (capacityOfSomeStack >= LARGE_VOLUME_CRITERION * sizeOfSomeStack){
-		Type *reallocDataPtr = (Type *)realloc(dataOfSomeStack, capacityOfSomeStack * NORMAL_DECREASE_COEFF + 2);
 
-		if (reallocDataPtr == nullptr) {//будет тупо выводить это в отдельную функцию, так как придется проверять что она вернула
+		Type *reallocDataPtr = (Type *)realloc(dataOfSomeStack, capacityOfSomeStack / NORMAL_DECREASE_COEFF + 2);
+
+		if (reallocDataPtr == nullptr) {
 			return LACK_OF_MEMORY;
 		}
 
 		someStackPtr->stackData       = reallocDataPtr + 1;
-		someStackPtr->stackCapacity  *= NORMAL_DECREASE_COEFF;
+		someStackPtr->stackCapacity  /= NORMAL_DECREASE_COEFF;
 		(someStackPtr->stackData)[-1] = CANARY_FOR_DATA;
 		(someStackPtr->stackData)[someStackPtr->stackCapacity] = CANARY_FOR_DATA;
-		printf(" значение canary4 =  %d \n", (someStackPtr->stackData)[someStackPtr->stackCapacity]);
-		printf("Значение CANARY_FOR_DATA = %d , %x \n", CANARY_FOR_DATA, CANARY_FOR_DATA);
-		printf(" Указатель на данные %p\n", someStackPtr->stackData + someStackPtr->stackCapacity );
 	
 	}
 	else if (capacityOfSomeStack <= SMALL_VOLUME_CRITERION * sizeOfSomeStack){
 
 		if (sizeOfSomeStack > BIG_SIZE_OF_STACK) {
-			//a realloc чистит память??
+			
 			Type *reallocDataPtr = (Type *)realloc(dataOfSomeStack, capacityOfSomeStack * SMALL_INCREASE_COEFF + 2);
 
 			if (reallocDataPtr == nullptr) {
 				return LACK_OF_MEMORY;
 			}
 
-			someStackPtr->stackData      = reallocDataPtr + 1;
-			someStackPtr->stackCapacity *= SMALL_INCREASE_COEFF;
+			someStackPtr->stackData       = reallocDataPtr + 1;
+			someStackPtr->stackCapacity  *= SMALL_INCREASE_COEFF;
 			(someStackPtr->stackData)[-1] = CANARY_FOR_DATA;
 			(someStackPtr->stackData)[someStackPtr->stackCapacity] = CANARY_FOR_DATA;
-			printf(" значение canary4 =  %d \n", (someStackPtr->stackData)[someStackPtr->stackCapacity]);
-			printf("Значение CANARY_FOR_DATA = %d , %x \n", CANARY_FOR_DATA, CANARY_FOR_DATA);
-			printf(" Указатель на данные %p\n", someStackPtr->stackData + someStackPtr->stackCapacity );
+
 		}
 		else {
 			Type *reallocDataPtr = (Type *)realloc(dataOfSomeStack, capacityOfSomeStack * NORMAL_INCREASE_COEFF + 2);
@@ -145,19 +158,17 @@ static int StackResize (Stack *someStackPtr){//управлет размером
 				return LACK_OF_MEMORY;
 			}
 
-			someStackPtr->stackData = reallocDataPtr + 1;
-			someStackPtr->stackCapacity *= NORMAL_INCREASE_COEFF; 
+			someStackPtr->stackData 	  = reallocDataPtr + 1;
+			someStackPtr->stackCapacity  *= NORMAL_INCREASE_COEFF; 
 			(someStackPtr->stackData)[-1] = CANARY_FOR_DATA;
 			(someStackPtr->stackData)[someStackPtr->stackCapacity] = CANARY_FOR_DATA;
-			printf(" значение canary4 =  %d \n", (someStackPtr->stackData)[someStackPtr->stackCapacity]);
-			printf("Значение CANARY_FOR_DATA = %d , %x \n", CANARY_FOR_DATA, CANARY_FOR_DATA);
-			printf(" Указатель на данные %p\n", someStackPtr->stackData + someStackPtr->stackCapacity );
 
 		}
 	}
-
+	else{
+		;
+	}
 	
-
 	someStackPtr->hash = MyHashRot13((const char *)someStackPtr);
 	ASSERT_OK(someStackPtr);
 
@@ -185,53 +196,38 @@ void IntStackPrint(const Stack* someStackPtr){//тут тоже assert_ok?
 	return;
 }
 
-//лучшее
+
 void PrintSeparator(){
 	printf("______________________________\n\n");
 }
 
-int StackNotOK(const Stack *someStackPtr, const int line, const char *file, const char *function_name){// enum-тип ??????
-	FILE *logFile = fopen("LIFOlog.txt", "a");
+
+int StackNotOK(const Stack *someStackPtr, const int line, const char *file, const char *function_name){
+
+	
 
 	fprintf(logFile, "В файле %s на строчке %d вызвана функция %s.\n", file, line, function_name);
 
-	NullPtrCheck(someStackPtr, logFile, "Указатель на стек равен нулю\n", STK_UNDEFINED);
-
-	FreedPtrCheck(someStackPtr, FREED_POINTER, logFile, "Указатель на стек уже был удалён!\n", TWICE_CALLED_DTOR);
-
-	NullPtrCheck(someStackPtr->stackData, logFile, "Указатель на данные стека равен нулю\n", STK_DATA_UNDEFINED);
-
-	if(someStackPtr->stackSize > someStackPtr->stackCapacity){
-		fprintf(logFile, "Размер данных стека больше выделенной под стек памяти\n");
-		fclose(logFile);
-		return SIZE_LARGER_CAPACITY;
-	}
-
-	CanaryCheck ((someStackPtr->canary1), CANARY_CONST, logFile, "Несовпадение левой стековой канарейки!! Её значение canary1 =  %x \n", CANARY_MISMATCH); 
-	CanaryCheck ((someStackPtr->canary2), CANARY_CONST, logFile, "Несовпадение правой стековой канарейки!! Её значение canary2 =  %x \n", CANARY_MISMATCH);	
-	CanaryCheck (((someStackPtr->stackData)[-1]), CANARY_FOR_DATA, logFile, "Несовпадение левой канарейки данных!! Её значение canary3 =  %x \n", CANARY_MISMATCH);
-																			
-/*
-	if ((someStackPtr->stackData)[someStackPtr->stackCapacity] != CANARY_FOR_DATA){
-		fprintf(logFile, "Несовпадение правой канарейки данных!! Её значение canary4 =  %d \n", (someStackPtr->stackData)[someStackPtr->stackCapacity]);
-		fprintf(logFile, "Значение CANARY_FOR_DATA = %d , %x \n", CANARY_FOR_DATA, CANARY_FOR_DATA);
-		fprintf(logFile, " Указатель на данные %p\n", someStackPtr->stackData + someStackPtr->stackCapacity );
-		fclose(logFile);
-		return CANARY_MISMATCH;
-	}
-
-*/	
+	NullPtrCheck			  (someStackPtr, logFile, "Указатель на стек равен нулю\n", STK_UNDEFINED);
+	FreedPtrCheck			  (someStackPtr, FREED_POINTER, logFile, "Указатель на стек уже был удалён!\n", TWICE_CALLED_DTOR);
+	NullPtrCheck			  (someStackPtr->stackData, logFile, "Указатель на данные стека равен нулю\n", STK_DATA_UNDEFINED);
+	CompOsSizeAndCapacityCheck((someStackPtr->stackSize), (someStackPtr->stackCapacity), logFile, "Размер данных стека больше выделенной под стек памяти\n", SIZE_LARGER_CAPACITY);
+	CanaryCheck 			  ((someStackPtr->canary1), CANARY_CONST, logFile, "Несовпадение левой стековой канарейки!! Её значение canary1 =  %x \n", CANARY_MISMATCH); 
+	CanaryCheck 			  ((someStackPtr->canary2), CANARY_CONST, logFile, "Несовпадение правой стековой канарейки!! Её значение canary2 =  %x \n", CANARY_MISMATCH);	
+	CanaryCheck 			  (((someStackPtr->stackData)[-1]), CANARY_FOR_DATA, logFile, "Несовпадение левой канарейки данных!! Её значение canary3 =  %x \n", CANARY_MISMATCH);																		
+	CanaryCheck 			  ((((someStackPtr->stackData)[someStackPtr->stackCapacity])), CANARY_FOR_DATA, logFile, "Несовпадение правой канарейки данных!! Её значение canary4 =  %x \n", CANARY_MISMATCH);
+	
 	unsigned int hashOfStack = MyHashRot13((const char *)someStackPtr);
 	HashCheck(hashOfStack, (someStackPtr->hash), logFile, "Несовпадение хешей! Нынешнее значение = %u, ожидаемое значение = %u\n", HASH_MISMATCH);
 
-	fclose(logFile);
+	
 	return NO_ERRORS;
 }
 
 
 int StackDump_(const Stack *someStackPtr, const int line, const char *file, const char *function_name){
-//а здесь с режимом a или w лучше открыть??
-	FILE *FileDump = fopen("LifoDump.html", "a");
+
+	
 
 	int statusStackNotOK = StackNotOK(someStackPtr, __LINE__, __FILE__, __FUNCTION__);
 
@@ -252,25 +248,24 @@ int StackDump_(const Stack *someStackPtr, const int line, const char *file, cons
 	}
 
 	fprintf(FileDump, "Тут мои полномочия всё\n</pre>");
-	fclose(FileDump);
+	
 
 	return NO_ERRORS;
 }
 
 void PrintElement(const Stack *someStackPtr){
-
-FILE *FileDump = fopen("LifoDump.html", "a");
-	fprintf(FileDump, "<pre>");
-	for (int i = 0; i < someStackPtr->stackCapacity; i++){
-		if (i < someStackPtr->stackSize){
+	printf("ghbdt\n");
+	for (int i = -1; i < (int)(someStackPtr->stackCapacity) + 1; i++){
+		printf("ghbdt\n");
+		if (i < (int)someStackPtr->stackSize){
 			fprintf(FileDump, "*[%d] = %d\n\n", i, someStackPtr->stackData[i]);
+
 		}
 		else {
 			fprintf(FileDump, "[%d] = %d\n\n", i, someStackPtr->stackData[i]);
 		}
 
 	}
-	fprintf(FileDump, "</pre>");
 }
 
 void MyMemcpy(void *newObject, const void *oldObject, size_t numberOfSymbols){
@@ -321,22 +316,7 @@ Type StackTop(Stack someStack){
 
 	return valueFromTop;
 }
-/*
-unsigned int MyHashRot13(const char * str)
-{
 
-    unsigned int hash = 0;
-
-    for(; *str ; str++)
-    {
-        hash += (unsigned char)(*str);
-        hash -= (hash << 13) | (hash >> 19);
-    }
-
-    return hash;
-
-}
-*/
 
 hash_t MyHashRot13(const char * str){
 
@@ -350,4 +330,18 @@ hash_t MyHashRot13(const char * str){
 
     return hash;
 
+}
+
+int SetPoison(Stack *someStackPtr){
+
+	if (someStackPtr == nullptr) 
+		return STK_UNDEFINED;
+	if (someStackPtr->stackData == nullptr)
+		return STK_DATA_UNDEFINED;
+
+	for (int i = 0; i < someStackPtr->stackCapacity + 2; i++){
+		someStackPtr->stackData[i] = POISON;
+	}
+
+	return NO_ERRORS;
 }
