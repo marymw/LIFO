@@ -2,15 +2,16 @@
 #include <assert.h>
 #include <stdio.h>
 
+
 int main() {
 	Stack firstStack = {}; //типа инициализация
 
-	int statusStackCtor = StackCtor(&firstStack); //конструктор стека, создает стек, возвращает ошибку
+	int statusStackCtor = StackCtor(&firstStack, 10); //конструктор стека, создает стек, возвращает ошибку
 	assert(statusStackCtor == 0);
 
 	StackDump(&firstStack);
 
-	int statusStackPush = StackPush(&firstStack, 10.54);//кладет что-то в конец стека
+	int statusStackPush = StackPush(&firstStack, 10);//кладет что-то в конец стека
 	assert(statusStackPush == 0);
 
 	int valueStackTop = StackTop (firstStack);
