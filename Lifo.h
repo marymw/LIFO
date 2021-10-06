@@ -4,6 +4,12 @@
 #include <string.h>
 #include <stdio.h>
 
+#ifndef LIFO_H
+#define LIFO_H
+
+#include <string.h>
+#include <stdio.h>
+
 #define DEBUG 1
 
 #ifdef DEBUG
@@ -21,7 +27,9 @@ enum Errors {
 	STK_DATA_UNDEFINED,	 //4
 	TWICE_CALLED_DTOR,   //5
 	CANARY_MISMATCH,     //6
-	HASH_MISMATCH		 //7
+	HASH_MISMATCH,		 //7
+	ERROR_IN_OPEN_LOG,	 //8
+	ERROR_IN_OPEN_DUMP	 //9
 };
 
 enum Constants{
@@ -33,7 +41,7 @@ enum Constants{
 	SMALL_INCREASE_COEFF = 2	
 };
 
-typedef int 				   Type;
+typedef double 				   Type;
 typedef unsigned long long int canary_t;
 typedef unsigned int 		   hash_t;
 
@@ -110,7 +118,7 @@ struct Stack{
 int    StackDtor     (Stack *someStackPtr);
 int    StackCtor     (Stack *someStackPtr, size_t someStackCapacity);
 int    SetPoison     (Stack *someStackPtr);
-Type   StackTop      (Stack someStack);
+Type   StackTop      (Stack *someStackPtr);
 int    StackPush     (Stack *firstStackPtr, Type value);
 Type   StackPop      (Stack *someStackPtr, int *statusStackPop = NULL);
 int    StackDump_    (const Stack *someStackPtr, const int line, const char *file, const char *function_name);
