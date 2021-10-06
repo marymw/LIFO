@@ -4,12 +4,6 @@
 #include <string.h>
 #include <stdio.h>
 
-#ifndef LIFO_H
-#define LIFO_H
-
-#include <string.h>
-#include <stdio.h>
-
 #define DEBUG 1
 
 #ifdef DEBUG
