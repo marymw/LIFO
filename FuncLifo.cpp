@@ -24,7 +24,18 @@ int StackCtor(Stack *someStackPtr, size_t someStackCapacity){
 	} 
 
 	logFile  = fopen("LIFOlog.txt", "w");
+
+	if (logFile == NULL) {
+		printf("Ошибка открытия файла Log\n");
+		return ERROR_IN_OPEN_LOG;
+	}
+
 	FileDump = fopen("LifoDump.html", "w");
+
+	if (FileDump == NULL){
+		printf("Ошибка открытия файла Dump\n");
+		return ERROR_IN_OPEN_DUMP;
+	}
 
 	someStackPtr->stackCapacity = someStackCapacity; 
 	someStackPtr->stackData     = (Type *)calloc(someStackPtr->stackCapacity + 2, sizeof(Type));
@@ -54,10 +65,10 @@ int StackPush(Stack *someStackPtr, const Type value){
 
 	ASSERT_OK(someStackPtr);
 
-	int statusStackMemory = StackResize(someStackPtr);
-	if (statusStackMemory != 0){
-		return statusStackMemory;
-	}
+	//int statusStackMemory = StackResize(someStackPtr);
+	//if (statusStackMemory != 0){
+	//	return statusStackMemory;
+	//}
 
 	someStackPtr->stackData[someStackPtr->stackSize] = value;
 	someStackPtr->stackSize++;
@@ -231,7 +242,7 @@ int StackDump_(const Stack *someStackPtr, const int line, const char *file, cons
 
 	int statusStackNotOK = StackNotOK(someStackPtr, __LINE__, __FILE__, __FUNCTION__);
 
-	fprintf(FileDump, "<pre>Вызван для типа:  , c типом элементов: , адрес стековой переменой : %p, верификатор выдал %d, name : called from function  %s, at file %s(%d)\n", someStackPtr, statusStackNotOK, function_name, file, line);
+	fprintf(FileDump, "<pre>Вызван для типа: Stack , c типом элементов: \\Type\\, адрес стековой переменой : %p, верификатор выдал %d, name : called from function  %s, at file %s(%d)\n", someStackPtr, statusStackNotOK, function_name, file, line);
 
 	if(someStackPtr == 0)
 		fprintf(FileDump, "Указатель на стек равен нулю, дальше печатать ничего не буду!\n");
@@ -254,15 +265,15 @@ int StackDump_(const Stack *someStackPtr, const int line, const char *file, cons
 }
 
 void PrintElement(const Stack *someStackPtr){
-	printf("ghbdt\n");
+	//printf("ghbdt\n");
 	for (int i = -1; i < (int)(someStackPtr->stackCapacity) + 1; i++){
-		printf("ghbdt\n");
+		//printf("ghbdt\n");
 		if (i < (int)someStackPtr->stackSize){
-			fprintf(FileDump, "*[%d] = %d\n\n", i, someStackPtr->stackData[i]);
+			fprintf(FileDump, "*[%d] = %lf\n\n", i, someStackPtr->stackData[i]);
 
 		}
 		else {
-			fprintf(FileDump, "[%d] = %d\n\n", i, someStackPtr->stackData[i]);
+			fprintf(FileDump, "[%d] = %lf\n\n", i, someStackPtr->stackData[i]);
 		}
 
 	}
@@ -304,15 +315,15 @@ void MyMemcpy(void *newObject, const void *oldObject, size_t numberOfSymbols){
 		
 }
 
-Type StackTop(Stack someStack){
+Type StackTop(Stack *someStackPtr){
 
-	ASSERT_OK(&someStack);
+	ASSERT_OK(someStackPtr);
 
-	size_t size = someStack.stackSize - 1;
+	size_t size = someStackPtr->stackSize - 1;
 
-	Type valueFromTop = someStack.stackData[size];
+	Type valueFromTop = someStackPtr->stackData[size];
 
-	ASSERT_OK(&someStack);
+	ASSERT_OK(someStackPtr);
 
 	return valueFromTop;
 }
@@ -340,7 +351,7 @@ int SetPoison(Stack *someStackPtr){
 		return STK_DATA_UNDEFINED;
 
 	for (int i = 0; i < someStackPtr->stackCapacity + 2; i++){
-		someStackPtr->stackData[i] = POISON;
+		someStackPtr->stackData[i] = (Type)POISON;
 	}
 
 	return NO_ERRORS;
