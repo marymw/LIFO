@@ -1,0 +1,15 @@
+В файле FuncLifo.cpp на строчке 58 вызвана функция StackCtor.
+В файле FuncLifo.cpp на строчке 66 вызвана функция StackPush.
+В файле FuncLifo.cpp на строчке 77 вызвана функция StackPush.
+В файле FuncLifo.cpp на строчке 320 вызвана функция StackTop.
+В файле FuncLifo.cpp на строчке 326 вызвана функция StackTop.
+В файле FuncLifo.cpp на строчке 66 вызвана функция StackPush.
+В файле FuncLifo.cpp на строчке 77 вызвана функция StackPush.
+В файле FuncLifo.cpp на строчке 320 вызвана функция StackTop.
+В файле FuncLifo.cpp на строчке 326 вызвана функция StackTop.
+В файле FuncLifo.cpp на строчке 243 вызвана функция StackDump_.
+В файле FuncLifo.cpp на строчке 85 вызвана функция StackPop.
+В файле FuncLifo.cpp на строчке 129 вызвана функция StackResize.
+В файле FuncLifo.cpp на строчке 184 вызвана функция StackResize.
+В файле FuncLifo.cpp на строчке 100 вызвана функция StackPop.
+В файле FuncLifo.cpp на строчке 108 вызвана функция StackDtor.
